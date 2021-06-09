@@ -1,0 +1,29 @@
+apiVersion: skaffold/v1
+kind: Config
+metadata:
+  name: todolist
+
+profiles:
+  - name: local
+    activation:
+      - kubeContext: minikube
+        command: dev
+    build:
+      local:
+        push: false
+        useDockerCLI: true
+      artifacts:
+      - image: todolist
+        context: .
+        sync:
+          manual:
+          - src: 'src/**/*.js'
+            dest: .
+            strip: src/
+      tagPolicy:
+        sha256: {}
+    deploy:
+      kubeContext: minikube
+      kubectl:
+        manifests:
+        - k8s\deploy.yaml

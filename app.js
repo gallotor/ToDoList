@@ -14,7 +14,11 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(express.static("public"));
-mongoose.connect("mongodb://172.17.0.2:27017/listItemDB");
+mongoose.connect("mongodb://root:9EFuHt4GcR@mongodb:27017", { useNewUrlParser: true , useUnifiedTopology: true});
+//mongoose.connect("mongodb://root:9EFuHt4GcR@localhost:27017", { useNewUrlParser: true , useUnifiedTopology: true});
+
+//mongoose.connect("mongodb://127.0.0.1:27017/listItemDB", { useNewUrlParser: true });
+
 const itemSchema = { //each todo item will just have a string
   name: String
 }
