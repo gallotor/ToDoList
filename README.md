@@ -39,3 +39,20 @@ To connect to your database from outside the cluster execute the following comma
 
     kubectl port-forward --namespace default svc/mongodb 27017:27017 &
     mongo --host 127.0.0.1 --authenticationDatabase admin -p $MONGODB_ROOT_PASSWORD
+
+## Requirements
+Minukube
+helm
+Install bitnami mongodb chart
+
+## Install
+
+kubectl apply -f .\k8s\deploy.yaml
+
+or
+
+skaffold dev -p local
+Update mongodb password 
+
+minikube service todolist
+
