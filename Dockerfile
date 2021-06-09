@@ -1,27 +1,31 @@
-FROM bitnami/node:14.17.0-prod-debian-10-r22
+# First build stage
+FROM bitnami/node:14 as builder
+ENV NODE_ENV="production"
 
-# Create app directory
-WORKDIR /usr/src/app
+# Copy app's source code to the /app directory
+COPY . /app
 
-# Permissions
-RUN chgrp -R 0 /usr/src/app && \
-     chmod -R g=u /usr/src/app
+# The application's directory will be the working directory
+WORKDIR /app
 
-ENV NODE_PORT=8080
+# Install Node.js dependencies defined in '/app/packages.json'
+RUN npm install
+
+# Second build stage
+FROM bitnami/node:14-prod
+
+ENV NODE_ENV="production"
+
+# Copy the application code
+COPY --from=builder /app /app
+
+# Create a non-root user
+RUN useradd -r -u 1001 -g root nonroot
+RUN chown -R nonroot /app
+USER nonroot
+
+WORKDIR /app
 EXPOSE 8080
+
+# Start the application
 CMD ["node", "app.js"]
-
-
-
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
-
-RUN npm ci --production
-# If you are building your code for production
-#RUN npm ci --only=production
-
-
-# Bundle app source
-COPY ./ .

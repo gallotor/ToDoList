@@ -13,9 +13,9 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+const MONGODB_PASSWORD = process.env.MONGODB_PASSWORD || 9EFuHt4GcR_mas; 
 app.use(express.static("public"));
 mongoose.connect("mongodb://root:9EFuHt4GcR@mongodb:27017", { useNewUrlParser: true , useUnifiedTopology: true});
-//mongoose.connect("mongodb://root:9EFuHt4GcR@localhost:27017", { useNewUrlParser: true , useUnifiedTopology: true});
 
 //mongoose.connect("mongodb://127.0.0.1:27017/listItemDB", { useNewUrlParser: true });
 

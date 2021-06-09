@@ -5,7 +5,7 @@ metadata:
 spec:
   ports:
   - port: 8080
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: todolist
 ---
@@ -25,8 +25,12 @@ spec:
       containers:
       - name: todolist
         image: todolist:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
+        envFrom:
+          - secretRef:
+              name: todolist
         resources:
           limits:
             cpu: 500m
@@ -48,3 +52,13 @@ spec:
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 50
+
+---
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: todolist
+data:
+  MONGODB_PASSWORD: OUVGdUh0NEdjUg==
+type: Opaque
