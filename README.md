@@ -213,6 +213,12 @@ The following minikube command will expose the application:
 ```console
 $ minikube service todolist
 ```
+To scale up and down the application replicas, use the following commands
+
+```console
+$ kubectl scale deployment.v1.apps/todolist --replicas=2
+$ kubectl scale deployment.v1.apps/todolist --replicas=1
+```
 
 
 ## 👉 Launch a hot reload deployment for the application
