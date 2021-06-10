@@ -2,7 +2,7 @@
 
 ## About
 
-[Todolist](https://github.com/msalman81/ToDoList) is a Node.js (Express) application. The todo items are stored on a remote MongoDB database. It was seleccted for the Automation project due to its simplicity and external DDBB integration.
+[Todolist](https://github.com/msalman81/ToDoList) is a Node.js (Express) application. The TODO items are stored in a remote MongoDB database. It was seleccted for the Automation project due to its simplicity and external DDBB integration.
 
 Here's a preview:
 ![Capture](https://user-images.githubusercontent.com/46281169/61468062-1e4c0d80-a996-11e9-8dec-a1cffbd4b59e.PNG)
@@ -22,6 +22,7 @@ _What software do we need to install and run the application?_
 -  **Helm** for external Mongodb dependencies
 -  **Kubectl** cli for kubernetes deployment
 -  **Skaffold** can be used for hot reload of the application
+-  **Helmfile** if we want to have a single declarative installation script
 
 ## 🔨 Installation
 
@@ -67,7 +68,7 @@ The applications will start in the following url:
 
 `http://localhost:8080`
 
-After this, MongoDB will be accesible from inside the cluster. A port forward can be used to expose the DDBB externally (remenber to set up the port forward of MongoDB port)
+ (remember to set up the port forward of MongoDB port)
 
 ## 📦 Executing the application in a local Container
 
@@ -84,7 +85,7 @@ For the initial building and dependency stage and:
 FROM bitnami/node:14-prod
 ```
 
-To assemble the dependencies on top of a production ready base image. **The dockerfile includes good practices** related to container definition, such as using a dedicated, **non privileged user** inside the container. The container executes the application main script and launches it in the port 8080.
+To assemble the dependencies on top of a production ready base image. **The dockerfile enforces good practices** related to container definition, such as using a dedicated, **non privileged user** inside the container. The container executes the application main script and launches it in the port 8080.
 
 Execute this script to build an application image with the *"latest"* tag.
 
@@ -103,7 +104,7 @@ Once we verified that the application works in a container deployment, we can ge
 
 ### Service
 
-It defines a **LoadBalancer** Kubernetes Cluster, that will enable **service external exposure**:
+It defines a **LoadBalancer** Kubernetes Cluster, that will enable **service external access**:
 
 ```yaml
 apiVersion: v1
@@ -160,7 +161,7 @@ spec:
 
 ### HPA policies
 
-To ensure a **scalabe deployment of the application**, a *HorizontalPodAutoscaler* must be defined. We stablished a minimum and maximum number of replicas, as well as a CPU utilization percentage to determine the replica scale up and down. 
+To ensure a **scalable deployment of the application**, a *HorizontalPodAutoscaler* must be defined. We stablished a minimum and maximum number of replicas, as well as a CPU utilization percentage to determine the replica scale up and down. 
 
 ```yaml
 apiVersion: autoscaling/v1
@@ -179,7 +180,7 @@ spec:
 
 ### ConfigMap
 
-Finally, a ConfigMap resource defines the connection string to the application MongoDB instance. 
+Finally, a *ConfigMap* resource defines the connection string to the application MongoDB instance. 
 
 
 ```yaml
@@ -204,7 +205,8 @@ mongoose.connect(MONGODB_CONNECTION, { useNewUrlParser: true , useUnifiedTopolog
 To **deploy the application in the cluster**, simply type:
 
 ```console
-$ kubectl apply -f .\k8s\deploy.yaml
+$ cd k8s
+$ kubectl apply -f deploy.yaml
 ```
 
 The following minikube command will expose the application:
@@ -215,7 +217,7 @@ $ minikube service todolist
 
 ## 👉 Launch a hot reload deployment for the application
 
-As a bonus, it is simple to stablish an inner loop development cycle with hot reload in the cluster, using [Skaffold](https://skaffold.dev/) from GCP. Skaffold can deploy and reload the application automatically with every source change and it enables a fast and efficient development cycle. To enable the skaffold development mode, simply type:
+As a bonus, it is simple to stablish an inner loop development cycle with hot reload in the cluster, using [Skaffold](https://skaffold.dev/) from GCP. Skaffold can deploy and reload the application automatically with every source change and it enables a fast and efficient development cycle. To activate the skaffold development mode, simply type:
 
 ```console
 $ skaffold dev -p local
@@ -223,7 +225,7 @@ $ skaffold dev -p local
 
 ## 💡 Possible improvements
 
-Even though the project doesn't specify it, the application deployment should be more robust and stable through a **Helm Chart**, that could give us release management over the deployment and it values.
+Even though the project doesn't specify it, the application deployment should be more robust and stable through a **Helm Chart**; this will give us release management over the deployment and its values.
 
 To install the application using a chart template, simply type this helm command:
 
