@@ -12,8 +12,5 @@ bases:
   - "bases/defaults.yaml"
 
 helmfiles:
-  - "releases/servtools.yaml"
-  - "releases/monitoring.yaml"
-  - "releases/tools.yaml"
-  - "releases/blueprint.yaml"
+  - "releases/database.yaml"
   - "releases/applications.yaml"

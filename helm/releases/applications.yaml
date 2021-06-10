@@ -4,5 +4,5 @@ releases:
     chart: ./todolist
     version: 0.1.0
     values:
-      - values/nodetest/INT/values.yaml
-      - values/nodetest/INT/config.yaml
+      - values/todolist/INT/values.yaml
+      - values/todolist/INT/config.yaml
