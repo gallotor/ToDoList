@@ -13,11 +13,12 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-const MONGODB_PASSWORD = process.env.MONGODB_PASSWORD || 9EFuHt4GcR_mas; 
+const MONGODB_CONNECTION = process.env.MONGODB_CONNECTION || "mongodb://todolist:todolist@localhost:27017/listItemDB"; 
 app.use(express.static("public"));
-mongoose.connect("mongodb://root:9EFuHt4GcR@mongodb:27017", { useNewUrlParser: true , useUnifiedTopology: true});
+console.log("Connecting to: "+ MONGODB_CONNECTION );
 
-//mongoose.connect("mongodb://127.0.0.1:27017/listItemDB", { useNewUrlParser: true });
+mongoose.connect(MONGODB_CONNECTION, { useNewUrlParser: true , useUnifiedTopology: true});
+
 
 const itemSchema = { //each todo item will just have a string
   name: String

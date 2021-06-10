@@ -1,58 +1,230 @@
-# ToDoList
-This is a Todolist web application that uses ejs templating for front-end and uses Node.js and Express for backend. The todo items are stored on a MongoDB database. Initially when you open the application you see three by default added items and you can add more items by adding yourselves and when you add an item a post route is triggered which creates a database item and stores it inside the relevant database. Each route URL has its own database created which stores separate data. You can just access a new route and then create a todolist for that specific route and I used Lodash npm package to format all routes.
+# ToDoList application deployment automation
 
-Body-parser npm package is used to access the form body values from the ejs template to create a new item. Then I used data.js which has two methods inside which are used to generate the current formatted date and day.
+## About
 
-The database is currently connected to localhost:27017 but it can be connected anywhere as wished. The css used to style is stored inside the public directory to serve up static assets.
-
-HOW TO RUN: You can either download the files, and then run "npm install" inside the installation directory to install all the npm packages used within the application and then open a new terminal window and run the MongoShell command "mongod" and then inside the first window run the command "node app.js" to run the app. You can also access the application at : https://vast-reef-18780.herokuapp.com/
+[Todolist](https://github.com/msalman81/ToDoList) is a Node.js (Express) application. The todo items are stored on a remote MongoDB database. It was seleccted for the Automation project due to it's simplicity and external DDBB integration.
 
 Here's a preview:
 ![Capture](https://user-images.githubusercontent.com/46281169/61468062-1e4c0d80-a996-11e9-8dec-a1cffbd4b59e.PNG)
 
+The original project has been forked into my github account:
+> https://github.com/gallotor/ToDoList/tree/feature-automation
 
-## Mongodb installation
+It includes minimal code modifications fron the original version (for mongodb connection parametrization) and all the required Docker and Kubernetes configuration.
+
+## 📋 Requirements
+
+_What software do we need to install and run the application?_
+
+-  **Nodejs** 10 os above for locally executing the application
+-  Local **Docker** installation for container creation
+-  A Kubernetes cluster. We'll use **Minikube** as an example implementation.
+-  **Helm** for external Mongodb dependencies
+-  **Kubectl** cli for kubernetes deployment
+-  **Skaffold** can be used for hot reload of the application
+
+## 🔨 Instalación
+
+## Dependency installation
+
+Since the application depends on MongoDB for external storage, it's necesary to install a local Mongodb DDBB prior to the application execution.
+
+> This document asumes that a local Minikube installation is available and configure with the **metrics-server addon**:
+
+```console
+$ minikube addons enable metrics-server
+```
+## 📏 Deploy Bitnami oficial MongoDB Chart
+
+First, add [Bitnami chart repository](https://bitnami.com/stacks) to your local helm installation:
+
+```console
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+
+Once bitnami is included as a repository, deploy the [MongoDB chart](https://bitnami.com/stack/mongodb/helm) with the following parameters:
+
+```console
+$ helm install mongodb --set auth.username=todolist,auth.password=todolist,auth.database=listItemDB bitnami/mongodb
+```
+
+> Bitnami MongoDB implements user authentication by default, so It's advisable to include a dedicated username/password for the application database.
+
+To expose the MondoDB service externally, use the following command:
+```console
+$ kubectl port-forward --namespace default svc/mongodb 27017:27017` 
+```
+
+## ✏️ Executing the application locally
+
+To start the application locally, just type the following commands:
+
+```console
+$ npm install
+$ node app.js
+```
+The applications will start in the following url:
+
+`http://localhost:8080`
+
+After this, MongoDB will be accesible from inside the cluster. A port forward can be used to expose the DDBB externally (remenber to set up the port forward of MongoDB port)
+
+## 📦 Executing the application in a local Container
+
+A customized Dockerfile has been included along with the original application. The Dockerfile will execute a multi-stage docker build, using two diferent [Bitnami NodeJS](https://github.com/bitnami/bitnami-docker-node#how-to-use-this-image) images:
+
+```docker
+# First build stage
+FROM bitnami/node:14 as builder
+```
+
+For the initial building and dependency stage and:
+```docker
+# Second build stage
+FROM bitnami/node:14-prod
+```
+
+To assemble the dependencies on top of a production ready base image. **The dockerfile includes good practices** related to container definition, such as using a dedicated, **non root user** inside the container. The container executes the application main script and launches it in the port 8080.
+
+Execute this script to build an application image with the *"latest"* tag.
+
+```console
+$ docker build --pull --rm -f "Dockerfile" -t todolist:latest "."
+```
+
+```console
+$ docker run --rm -it -p 8080:8080/tcp todolist:latest
+```
+
+## 🚀 Deploying the application in a Kubernetes cluster
+
+Once we verified that the application works in a container deployment, we can generate a Kubernetes descriptor. This file can be found in the k8s/deploy.yaml path of the repository, and it includes the following sections:
 
 
-** Please be patient while the chart is being deployed **
+### Service
 
-MongoDB(R) can be accessed on the following DNS name(s) and ports from within your cluster:
+It defines a **LoadBalancer** Kubernetes Cluster, that will enable service external exposure:
 
-    mongodb.default.svc.cluster.local
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: todolist
+spec:
+  ports:
+  - port: 8080
+  type: LoadBalancer
+  selector:
+    app: todolist
+```
 
-To get the root password run:
+### Deployment
+The deployment will define:
+* The image:tag to be deployed in the pods 
+>in this example we assumed that the todolist:latest image is already present in the local docker daemon and there's no need to pull it from a remote repository: `imagePullPolicy: Never` 
+* The resource request and limits to be applied in the pods
+* A reference to the environment variable used as configuration for the MongoDB connection string.
+  
 
-    export MONGODB_ROOT_PASSWORD=$(kubectl get secret --namespace default mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todolist
+spec:
+  selector:
+    matchLabels:
+      app: todolist
+  template:
+    metadata:
+      labels:
+        app: todolist
+    spec:
+      containers:
+      - name: todolist
+        image: todolist:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - configMapRef:
+              name: todolist
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+```
 
-To connect to your database, create a MongoDB(R) client container:
+### HPA policies
 
-    kubectl run --namespace default mongodb-client --rm --tty -i --restart='Never' --env="MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD" --image docker.io/bitnami/mongodb:4.4.6-debian-10-r8 --command -- bash
+To ensure a **scalabe deployment of the application**, a *HorizontalPodAutoscaler* must be defined. We stablished a minimum and maximum number of replicas, as well as a CPU utilization percentage to determine the replica scale up and down. 
 
-    kubectl run --namespace default mongodb-client --rm --tty -i --restart='Never' --env="MONGODB_ROOT_PASSWORD=9EFuHt4GcR" --image docker.io/bitnami/mongodb:4.4.6-debian-10-r8 --command -- bash
-    
+```yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: todolist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: todolist
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50
+```
 
-Then, run the following command:
-    mongo admin --host "mongodb" --authenticationDatabase admin -u root -p $MONGODB_ROOT_PASSWORD
-      mongo admin --host "mongodb" --authenticationDatabase admin -u root -p 9EFuHt4GcR
+### ConfigMap
 
-To connect to your database from outside the cluster execute the following commands:
+Finally, a ConfigMap resource defines the connection string to the application MongoDB instance. 
 
-    kubectl port-forward --namespace default svc/mongodb 27017:27017 &
-    mongo --host 127.0.0.1 --authenticationDatabase admin -p $MONGODB_ROOT_PASSWORD
 
-## Requirements
-Minukube
-helm
-Install bitnami mongodb chart
+```yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: todolist
+data:
+  MONGODB_CONNECTION: mongodb://todolist:todolist@mongodb:27017/listItemDB
+```
+It defines an **MONGODB_CONNECTION** environment variable within the pods that is used in the application code to connect to Mongodb:
 
-## Install
+```javascript
+const MONGODB_CONNECTION = process.env.MONGODB_CONNECTION || "mongodb://todolist:todolist@localhost:27017/listItemDB"; 
+app.use(express.static("public"));
+console.log("Connecting to: "+ MONGODB_CONNECTION );
 
-kubectl apply -f .\k8s\deploy.yaml
+mongoose.connect(MONGODB_CONNECTION, { useNewUrlParser: true , useUnifiedTopology: true});
+```
 
-or
 
-skaffold dev -p local
-Update mongodb password 
+To **deploy the application in the cluster**, simply type:
 
-minikube service todolist
+```console
+$ kubectl apply -f .\k8s\deploy.yaml
+```
+
+The following minikube command will expose the application:
+```console
+$ minikube service todolist
+```
+
+
+## 👉 Launch a hot reload deployment for the application
+
+As a bonus, it is relativetely simple to stablish an inner loop development ciclye with hot relead in the cluster, using [Skaffold](https://skaffold.dev/) from GCP. Skaffold can deploy and reload the aplication with every source change and it enables a fast and efficient development cycle. To enable the skaffold development mode, simply type:
+
+```console
+$ skaffold dev -p local
+```
+
+## 💡 Possible improvements
+
+Even though the project doesn't specify it, the application deployment should be more robust and stable thought a Helm Chart, that could give us release control over the deployment and it values.
+
+Moreover, once a Helm chart for the application is definned, it should be relativelly easy to define a [Helmfile](https://github.com/roboll/helmfile) script that will encapsulate both the application (todolist) and the dependencies (MongoDB) into a single script.
+
 

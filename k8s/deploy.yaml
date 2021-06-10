@@ -29,7 +29,7 @@ spec:
         ports:
         - containerPort: 8080
         envFrom:
-          - secretRef:
+          - configMapRef:
               name: todolist
         resources:
           limits:
@@ -55,10 +55,9 @@ spec:
 
 ---
 
-kind: Secret
+kind: ConfigMap
 apiVersion: v1
 metadata:
   name: todolist
 data:
-  MONGODB_PASSWORD: OUVGdUh0NEdjUg==
-type: Opaque
+  MONGODB_CONNECTION: mongodb://todolist:todolist@mongodb:27017/listItemDB
