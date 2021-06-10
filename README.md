@@ -12,7 +12,8 @@ Here's a preview:
 
 
 ## Mongodb installation
-
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install mongodb bitnami/mongodb
 
 ** Please be patient while the chart is being deployed **
 
