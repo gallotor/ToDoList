@@ -1,0 +1,2 @@
+data:
+  MONGODB_CONNECTION: mongodb://todolist:todolist@mongodb:27017/listItemDB

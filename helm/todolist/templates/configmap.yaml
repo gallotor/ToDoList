@@ -1,0 +1,23 @@
+{{- define "todolist.hasConfigmap" -}}
+{{- if .Values.configMap.data -}}
+true
+{{- end }}
+{{- end }}
+
+{{- define "todolist.configmap" -}}
+{{- if .Values.configMap.data -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "todolist.fullname" . }}
+  labels: {{ include "todolist.labels" . | nindent 4}}
+data:
+{{- range $k, $v := .Values.configMap.data }}
+  {{- $k | nindent 2 }}: |
+    {{- $v | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+
+{{ include "todolist.configmap" . }} 

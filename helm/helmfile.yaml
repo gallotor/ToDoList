@@ -1,0 +1,19 @@
+helmDefaults:
+  atomic: true
+  createNamespace: false
+  cleanupOnFail: true
+  verify: true
+  timeout: 300
+  wait: true
+
+bases:
+  - "bases/repos.yaml"
+  - "bases/environments.yaml"
+  - "bases/defaults.yaml"
+
+helmfiles:
+  - "releases/servtools.yaml"
+  - "releases/monitoring.yaml"
+  - "releases/tools.yaml"
+  - "releases/blueprint.yaml"
+  - "releases/applications.yaml"

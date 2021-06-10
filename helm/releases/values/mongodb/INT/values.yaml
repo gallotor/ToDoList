@@ -1,0 +1,7 @@
+## Default values.yaml for MongoDB
+## This is a YAML-formatted file.
+
+auth:
+  username: "todolist"
+  password: "todolist"
+  database: "listItemDB"

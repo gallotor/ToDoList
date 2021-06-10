@@ -1,0 +1,8 @@
+releases:
+  - name: mongodb
+    namespace: default
+    chart: bitnami/mongodb
+    #version: 0.1.1
+    #installed: false
+    values:
+      - values/demo/INT/values.yaml

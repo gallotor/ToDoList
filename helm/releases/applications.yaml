@@ -1,0 +1,8 @@
+releases:
+  - name: todolist
+    namespace: default
+    chart: ./todolist
+    version: 0.1.0
+    values:
+      - values/nodetest/INT/values.yaml
+      - values/nodetest/INT/config.yaml

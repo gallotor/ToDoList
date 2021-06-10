@@ -223,8 +223,15 @@ $ skaffold dev -p local
 
 ## 💡 Possible improvements
 
-Even though the project doesn't specify it, the application deployment should be more robust and stable thought a Helm Chart, that could give us release control over the deployment and it values.
+Even though the project doesn't specify it, the application deployment should be more robust and stable thought a **Helm Chart**, that could give us release management over the deployment and it values.
 
-Moreover, once a Helm chart for the application is definned, it should be relativelly easy to define a [Helmfile](https://github.com/roboll/helmfile) script that will encapsulate both the application (todolist) and the dependencies (MongoDB) into a single script.
+To install the application using a chart template, simply type this helm command:
+
+```console
+$ helm install todolist .\helm\todolist
+```
+
+
+Moreover, once a Helm chart for the application is defined, it should be relativelly easy to define a [Helmfile](https://github.com/roboll/helmfile) script that will encapsulate both the application (todolist) and the dependencies (MongoDB) into a single script.
 
 
