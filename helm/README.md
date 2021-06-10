@@ -1,6 +1,6 @@
 ![Logo](https://helm.sh/img/helm.svg)
 
-# blue-iac-helmfile
+# TodoList helmfile
 
 **official docs**
 

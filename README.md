@@ -2,7 +2,7 @@
 
 ## About
 
-[Todolist](https://github.com/msalman81/ToDoList) is a Node.js (Express) application. The todo items are stored on a remote MongoDB database. It was seleccted for the Automation project due to it's simplicity and external DDBB integration.
+[Todolist](https://github.com/msalman81/ToDoList) is a Node.js (Express) application. The todo items are stored on a remote MongoDB database. It was seleccted for the Automation project due to its simplicity and external DDBB integration.
 
 Here's a preview:
 ![Capture](https://user-images.githubusercontent.com/46281169/61468062-1e4c0d80-a996-11e9-8dec-a1cffbd4b59e.PNG)
@@ -16,14 +16,14 @@ It includes minimal code modifications fron the original version (for mongodb co
 
 _What software do we need to install and run the application?_
 
--  **Nodejs** 10 os above for locally executing the application
+-  **Nodejs** 10 or above for locally executing the application
 -  Local **Docker** installation for container creation
 -  A Kubernetes cluster. We'll use **Minikube** as an example implementation.
 -  **Helm** for external Mongodb dependencies
 -  **Kubectl** cli for kubernetes deployment
 -  **Skaffold** can be used for hot reload of the application
 
-## 🔨 Instalación
+## 🔨 Installation
 
 ## Dependency installation
 
@@ -34,7 +34,7 @@ Since the application depends on MongoDB for external storage, it's necesary to 
 ```console
 $ minikube addons enable metrics-server
 ```
-## 📏 Deploy Bitnami oficial MongoDB Chart
+## 📏 Deploy Bitnami official MongoDB Chart
 
 First, add [Bitnami chart repository](https://bitnami.com/stacks) to your local helm installation:
 
@@ -84,7 +84,7 @@ For the initial building and dependency stage and:
 FROM bitnami/node:14-prod
 ```
 
-To assemble the dependencies on top of a production ready base image. **The dockerfile includes good practices** related to container definition, such as using a dedicated, **non root user** inside the container. The container executes the application main script and launches it in the port 8080.
+To assemble the dependencies on top of a production ready base image. **The dockerfile includes good practices** related to container definition, such as using a dedicated, **non privileged user** inside the container. The container executes the application main script and launches it in the port 8080.
 
 Execute this script to build an application image with the *"latest"* tag.
 
@@ -103,7 +103,7 @@ Once we verified that the application works in a container deployment, we can ge
 
 ### Service
 
-It defines a **LoadBalancer** Kubernetes Cluster, that will enable service external exposure:
+It defines a **LoadBalancer** Kubernetes Cluster, that will enable **service external exposure**:
 
 ```yaml
 apiVersion: v1
@@ -215,7 +215,7 @@ $ minikube service todolist
 
 ## 👉 Launch a hot reload deployment for the application
 
-As a bonus, it is relativetely simple to stablish an inner loop development ciclye with hot relead in the cluster, using [Skaffold](https://skaffold.dev/) from GCP. Skaffold can deploy and reload the aplication with every source change and it enables a fast and efficient development cycle. To enable the skaffold development mode, simply type:
+As a bonus, it is simple to stablish an inner loop development cycle with hot reload in the cluster, using [Skaffold](https://skaffold.dev/) from GCP. Skaffold can deploy and reload the application automatically with every source change and it enables a fast and efficient development cycle. To enable the skaffold development mode, simply type:
 
 ```console
 $ skaffold dev -p local
@@ -223,7 +223,7 @@ $ skaffold dev -p local
 
 ## 💡 Possible improvements
 
-Even though the project doesn't specify it, the application deployment should be more robust and stable thought a **Helm Chart**, that could give us release management over the deployment and it values.
+Even though the project doesn't specify it, the application deployment should be more robust and stable through a **Helm Chart**, that could give us release management over the deployment and it values.
 
 To install the application using a chart template, simply type this helm command:
 
@@ -232,6 +232,34 @@ $ helm install todolist .\helm\todolist
 ```
 
 
-Moreover, once a Helm chart for the application is defined, it should be relativelly easy to define a [Helmfile](https://github.com/roboll/helmfile) script that will encapsulate both the application (todolist) and the dependencies (MongoDB) into a single script.
+Moreover, once we define an application Helm chart, it's relatively easy to define a [Helmfile](https://github.com/roboll/helmfile) script that will encapsulate both the application (todolist) and the dependencies (MongoDB) into a single script. 
+
+```yaml
+helmDefaults:
+  atomic: true
+  createNamespace: false
+  cleanupOnFail: true
+  verify: true
+  timeout: 300
+  wait: true
+
+bases:
+  - "bases/repos.yaml"
+  - "bases/environments.yaml"
+  - "bases/defaults.yaml"
+
+helmfiles:
+  - "releases/database.yaml"
+  - "releases/applications.yaml"
+```
+
+This command will deploy the complete application and its requirements automaticaly:
+
+```console
+$ cd helm
+$ helmfile apply
+```
+
+See the helm folder of the repository for examples and more detail about helmfile. 
 
 

@@ -1,8 +1,8 @@
 releases:
   - name: todolist
     namespace: default
-    chart: ./todolist
-    version: 0.1.0
+    chart: ../../helm/todolist
+    #version: 0.1.0
     values:
       - values/todolist/INT/values.yaml
       - values/todolist/INT/config.yaml
