@@ -23,6 +23,7 @@ _What software do we need to install and run the application?_
 -  **Kubectl** cli for kubernetes deployment
 -  **Skaffold** can be used for hot reload of the application
 -  **Helmfile** if we want to have a single declarative installation script
+-  **Carvel** For an alternative deployment method
 
 ## 🔨 Installation
 
@@ -270,4 +271,9 @@ $ helmfile apply
 
 See the helm folder of the repository for examples and more detail about helmfile. 
 
+### Carvel deployment (preview)
+
+```console
+$ ytt -f carvel/ | kapp deploy -a todolist -c -f- --yes
+```
 

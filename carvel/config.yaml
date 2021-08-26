@@ -1,0 +1,66 @@
+#@ load("@ytt:data", "data")
+
+#@ def labels():
+todolist: ""
+#@ end
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: todolist
+spec:
+  ports:
+  - port: #@ data.values.svc_port
+    targetPort: #@ data.values.app_port
+  selector: #@ labels()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: todolist
+spec:
+  selector:
+    matchLabels: #@ labels()
+  template:
+    metadata:
+      labels: #@ labels()
+    spec:
+      containers:
+      - name: todolist
+        image: todolist:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - configMapRef:
+              name: todolist-config
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: todolist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: todolist
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: todolist-config
+data:
+  MONGODB_CONNECTION: mongodb://todolist:todolist@mongodb:27017/listItemDB
